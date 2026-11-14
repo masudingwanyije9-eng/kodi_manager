@@ -1,0 +1,448 @@
+﻿<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kodi Manager - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>select[name=jengo],select[name=jengo] option,#tafutaInput,#tafutaInput::placeholder,.lbl-bold{font-weight:700!important;color:#111!important;opacity:1!important}</style><style id='km-theme'>body{background:linear-gradient(135deg,#e0f2fe 0%,#bae6fd 50%,#7dd3fc 100%)!important;background-attachment:fixed!important;min-height:100vh;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}.navbar,.bg-dark{background:linear-gradient(90deg,#0369a1 0%,#0284c7 55%,#0ea5e9 100%)!important;box-shadow:0 4px 16px rgba(2,132,199,.25)!important;border-bottom:2px solid rgba(255,255,255,.25)!important;}.btn-dark{background-color:#0369a1!important;border-color:#0369a1!important;color:#ffffff!important;}.btn-dark:hover{background-color:#0284c7!important;border-color:#0284c7!important;}.card{background:rgba(255,255,255,.96)!important;border-radius:14px!important;box-shadow:0 6px 20px rgba(2,132,199,.10)!important;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease;}.card:hover{box-shadow:0 10px 26px rgba(2,132,199,.16)!important;}.row.g-2>div:nth-child(1) .card{background:linear-gradient(135deg,#ffffff 0%,#bae6fd 100%)!important;border-top:4px solid #0284c7!important;}.row.g-2>div:nth-child(2) .card{background:linear-gradient(135deg,#ffffff 0%,#ccfbf1 100%)!important;border-top:4px solid #0d9488!important;}.row.g-2>div:nth-child(3) .card{background:linear-gradient(135deg,#ffffff 0%,#fef3c7 100%)!important;border-top:4px solid #d97706!important;}.row.g-2>div:nth-child(4) .card{background:linear-gradient(135deg,#ffffff 0%,#e0f2fe 100%)!important;border-top:4px solid #0ea5e9!important;}.card-header{background:linear-gradient(90deg,#f0f9ff 0%,#bae6fd 100%)!important;border-bottom:2px solid #7dd3fc!important;color:#0c4a6e!important;padding:.75rem 1rem!important;}.table thead th,.table-dark th{background:#0284c7!important;color:#ffffff!important;border:none!important;font-weight:700!important;}.table tbody tr:hover{background-color:#e0f2fe!important;}#tafutaInput,select[name=jengo]{background:#ffffff!important;border:2px solid #0284c7!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(2,132,199,.12);}</style></head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-2">
+            <a class="navbar-brand fw-bold mb-0" href="{% url 'dashboard' %}">Kodi Manager</a>
+            <span class="badge bg-secondary">{{ request.user.username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning btn-sm">Toka</button>
+            </form>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalJengo">
+                + Ongeza Jengo
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalChumba">
+                + Ongeza Chumba
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMpangaji">
+                + Sajili Mpangaji
+            </button>
+            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalMalipo">
+                + Rekodi Malipo
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h5 class="mb-0 fw-bold">Muhtasari wa Biashara</h5>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <select name="jengo" class="form-select form-select-sm fw-bold text-dark" onchange="this.form.submit()">
+                <option value="">Majengo Yote ({{ majengo.count }})</option>
+                {% for j in majengo %}
+                    <option value="{{ j.id }}" {% if jengo_lililochaguliwa == j.id|stringformat:"s" %}selected{% endif %}>
+                        {{ j }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <small class="text-muted"><strong class="lbl-bold fw-bold text-dark">Jumla ya Vyumba</strong></small>
+                <h3 class="fw-bold mt-1 mb-0">{{ vyumba_vilivyojaa }} / {{ jumla_vyumba }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <small class="lbl-bold fw-bold text-dark">Vyumba Vilivyo Wazi</small>
+                <h3 class="fw-bold text-success mt-1 mb-0">{{ vyumba_wazi }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <small class="lbl-bold fw-bold text-dark">Mapato Mwezi Huu (TZS)</small>
+                <h3 class="fw-bold text-primary mt-1 mb-0"><span class="namba">{{ mapato_mwezi_huu }}</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <h6 class="fw-bold mb-0">Hali ya Vyumba kwa Kila Jengo</h6>
+                <small class="lbl-bold fw-bold text-dark">Bofya namba yoyote kubadili idadi ya Vyumba</small>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Jina la Jengo</th>
+                            <th class="text-center">Jumla ya Vyumba</th>
+                            <th class="text-center">Vilivyochukuliwa</th>
+                            <th class="text-center">Vilivyo Wazi</th>
+                            <th class="text-end">Kitendo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in takwimu_majengo %}
+                        <tr>
+                            <td class="fw-semibold">{{ item.jengo }}</td>
+                            <td class="text-center">
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-dark fw-bold px-3"
+                                    onclick="funguaBadiliVyumba('{{ item.jengo.id }}', '{{ item.jengo|escapejs }}', {{ item.jumla }}, {{ item.vilivyojaa }}, 'jumla')">
+                                    {{ item.jumla }} &#9998;
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <button type="button"
+                                    class="btn btn-sm bg-primary-subtle text-primary border border-primary-subtle fw-bold px-3"
+                                    onclick="funguaBadiliVyumba('{{ item.jengo.id }}', '{{ item.jengo|escapejs }}', {{ item.jumla }}, {{ item.vilivyojaa }}, 'vilivyochukuliwa')">
+                                    {{ item.vilivyojaa }} &#9998;
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <button type="button"
+                                    class="btn btn-sm bg-success-subtle text-success border border-success-subtle fw-bold px-3"
+                                    onclick="funguaBadiliVyumba('{{ item.jengo.id }}', '{{ item.jengo|escapejs }}', {{ item.jumla }}, {{ item.vilivyojaa }}, 'vilivyochukuliwa')">
+                                    {{ item.wazi }} &#9998;
+                                </button>
+                            </td>
+                            <td class="text-end">
+                                <a href="?jengo={{ item.jengo.id }}" class="btn btn-outline-secondary btn-sm">Angalia</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">Hakuna majengo yaliyosajiliwa bado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="fw-bold mb-3">Vyumba Vilivyo Wazi Sasa ({{ vyumba_wazi }})</h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% for chumba in vyumba_wazi_list %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                        {{ chumba }}
+                    </span>
+                {% empty %}
+                    <span class="text-muted small">Hakuna chumba kilicho wazi kwa sasa.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <h6 class="fw-bold mb-0">Wapangaji Waliopo Sasa</h6>
+                <input id="tafutaInput" style="font-weight:700" type="text" id="tafutaMpangaji" class="form-control form-control-sm w-auto" placeholder="Tafuta jina, simu au chumba...">
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="jedwaliWapangaji">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Jina Kamili</th>
+                            <th>Chumba</th>
+                            <th>Simu</th>
+                            <th>Kodi Inaisha</th>
+                            <th>Hali</th>
+                            <th>Kitendo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mpangaji in wapangaji %}
+                        <tr>
+                            <td class="fw-semibold">{{ mpangaji.jina_kamili }}</td>
+                            <td>{{ mpangaji.chumba }}</td>
+                            <td>{{ mpangaji.namba_ya_simu }}</td>
+                            <td>{{ mpangaji.tarehe_kodi_kuisha|default:"-" }}</td>
+                            <td>
+                                {% if mpangaji.tarehe_kodi_kuisha %}
+                                    {% if mpangaji.tarehe_kodi_kuisha < leo %}
+                                        <span class="badge bg-danger">Imeisha</span>
+                                    {% elif mpangaji.tarehe_kodi_kuisha <= tahadhari_tarehe %}
+                                        <span class="badge bg-warning text-dark">Inakaribia Kuisha</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Hai</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Hajalipa Bado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'mpangaji_hama' mpangaji.id %}" onsubmit="return confirm('Una uhakika mpangaji huyu amehama?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Amehama</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">Hakuna wapangaji waliosajiliwa bado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h6 class="fw-bold mb-3">Malipo ya Hivi Karibuni</h6>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mpangaji</th>
+                            <th>Kiasi (TZS)</th>
+                            <th>Miezi</th>
+                            <th>Njia ya Malipo</th>
+                            <th>Tarehe</th>
+                            <th>Risiti</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in malipo %}
+                        <tr>
+                            <td class="fw-semibold">{{ m.mpangaji.jina_kamili }}</td>
+                            <td><span class="namba">{{ m.kiasi }}</span></td>
+                            <td>{{ m.miezi_aliyolipia }}</td>
+                            <td>{{ m.get_njia_ya_malipo_display|default:m.njia_ya_malipo }}</td>
+                            <td>{{ m.tarehe_ya_malipo|date:"Y-m-d" }}</td>
+                            <td>
+                                <a href="{% url 'risiti_malipo' m.id %}" class="btn btn-outline-secondary btn-sm">Risiti</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">Hakuna malipo yaliyorekodiwa bado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Badili Idadi ya Vyumba vya Jengo -->
+<div class="modal fade" id="modalBadiliVyumba" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="aina_ya_fomu" value="badili_idadi_vyumba">
+                <input type="hidden" name="jengo_id" id="badiliJengoId">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold" id="badiliJengoTitle">Badili Idadi ya Vyumba</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Jumla ya Vyumba</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="badiliNambaInput('inputJumlaVyumba', -1)">-</button>
+                            <input type="number" min="0" name="jumla_vyumba" id="inputJumlaVyumba" class="form-control text-center fw-bold" oninput="sasishaHesabuWazi()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="badiliNambaInput('inputJumlaVyumba', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Vyumba Vilivyochukuliwa</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="badiliNambaInput('inputVilivyochukuliwa', -1)">-</button>
+                            <input type="number" min="0" name="vilivyochukuliwa" id="inputVilivyochukuliwa" class="form-control text-center fw-bold" oninput="sasishaHesabuWazi()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="badiliNambaInput('inputVilivyochukuliwa', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="alert alert-success py-2 text-center mb-0 small">
+                        Vyumba Vilivyo Wazi: <strong id="onyeshoWazi">0</strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Funga</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Hifadhi Mabadiliko</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ongeza Jengo -->
+<div class="modal fade" id="modalJengo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="aina_ya_fomu" value="jengo">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ongeza Jengo Jipya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ jengo_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Funga</button>
+                    <button type="submit" class="btn btn-primary">Hifadhi Jengo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ongeza Chumba -->
+<div class="modal fade" id="modalChumba" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="aina_ya_fomu" value="chumba">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ongeza Chumba Kipya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ chumba_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Funga</button>
+                    <button type="submit" class="btn btn-primary">Hifadhi Chumba</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sajili Mpangaji -->
+<div class="modal fade" id="modalMpangaji" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="aina_ya_fomu" value="mpangaji">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sajili Mpangaji Mpya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ mpangaji_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Funga</button>
+                    <button type="submit" class="btn btn-primary">Hifadhi Mpangaji</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Rekodi Malipo -->
+<div class="modal fade" id="modalMalipo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="aina_ya_fomu" value="malipo">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rekodi Malipo ya Kodi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ malipo_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Funga</button>
+                    <button type="submit" class="btn btn-success">Hifadhi Malipo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.modal input, .modal select, .modal textarea').forEach(el => {
+    if (el.type === 'hidden') return;
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+    if (el.name && el.name.includes('tarehe')) el.type = 'date';
+});
+
+document.querySelectorAll('.namba').forEach(el => {
+    const val = Number(el.textContent.trim());
+    if (!isNaN(val)) el.textContent = val.toLocaleString('en-US');
+});
+
+document.getElementById('tafutaMpangaji').addEventListener('keyup', function() {
+    const neno = this.value.toLowerCase();
+    document.querySelectorAll('#jedwaliWapangaji tbody tr').forEach(mstari => {
+        mstari.style.display = mstari.textContent.toLowerCase().includes(neno) ? '' : 'none';
+    });
+});
+
+function funguaBadiliVyumba(jengoId, jinaJengo, jumla, vilivyochukuliwa, lengo) {
+    document.getElementById('badiliJengoId').value = jengoId;
+    document.getElementById('badiliJengoTitle').textContent = jinaJengo;
+    document.getElementById('inputJumlaVyumba').value = jumla;
+    document.getElementById('inputVilivyochukuliwa').value = vilivyochukuliwa;
+    sasishaHesabuWazi();
+
+    const modalEl = document.getElementById('modalBadiliVyumba');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    modalEl.addEventListener('shown.bs.modal', function handler() {
+        const target = lengo === 'jumla' ? document.getElementById('inputJumlaVyumba') : document.getElementById('inputVilivyochukuliwa');
+        target.focus();
+        target.select();
+        modalEl.removeEventListener('shown.bs.modal', handler);
+    });
+}
+
+function badiliNambaInput(inputId, kiasi) {
+    const el = document.getElementById(inputId);
+    const valMpya = Math.max(0, (parseInt(el.value, 10) || 0) + kiasi);
+    el.value = valMpya;
+    sasishaHesabuWazi();
+}
+
+function sasishaHesabuWazi() {
+    const jumlaEl = document.getElementById('inputJumlaVyumba');
+    const chukuliwaEl = document.getElementById('inputVilivyochukuliwa');
+    let jumla = Math.max(0, parseInt(jumlaEl.value, 10) || 0);
+    let chukuliwa = Math.max(0, parseInt(chukuliwaEl.value, 10) || 0);
+    if (chukuliwa > jumla) {
+        chukuliwa = jumla;
+        chukuliwaEl.value = chukuliwa;
+    }
+    document.getElementById('onyeshoWazi').textContent = jumla - chukuliwa;
+}
+
+{% if fungua_modal %}
+new bootstrap.Modal(document.getElementById('{{ fungua_modal }}')).show();
+{% endif %}
+</script>
+<div class="modal fade" id="mMaoni"><div class="modal-dialog"><form method="post" action="{% url 'tuma_maoni' %}" class="modal-content">{% csrf_token %}<div class="modal-header" style="background:#0284c7;color:#fff"><h5 class="fw-bold mb-0">&#128172; Toa Maoni Kuhusu Maboresho</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><label class="fw-bold mb-1">Aina ya Maoni</label><select name="aina_ya_maoni" class="form-select mb-2 fw-bold"><option value="Maboresho">Pendekezo la Maboresho</option><option value="Hitilafu">Tatizo / Hitilafu</option><option value="Pongezi">Sifa / Pongezi</option><option value="Swali">Swali / Msaada</option></select><label class="fw-bold mb-1">Maoni Yako</label><textarea name="ujumbe" rows="4" required class="form-control" placeholder="Tuambie ungependa tuboreshe nini kwenye mfumo huu..."></textarea></div><div class="modal-footer"><button type="submit" class="btn btn-primary w-100 fw-bold">Tuma Maoni</button></div></form></div></div><div class="modal fade" id="mLipia"><div class="modal-dialog"><div class="modal-content"><div class="modal-header" style="background:#0369a1;color:#fff"><h5 class="fw-bold mb-0">&#128179; Washa Akaunti (Payment Methods)</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="fw-bold mb-2">Unatumia Majaribio ya Bure (Siku 15).</p><div class="alert alert-info py-2 mb-3"><strong>Akaunti:</strong> {{ request.user.username }} &nbsp;|&nbsp; <strong>Zimebaki:</strong> Siku {{ usajili.siku_zilizobaki }}</div><div class="fw-bold mb-2">Njia za Malipo Zinazopatikana:</div><div class="row g-2 mb-3"><div class="col-6"><div class="p-2 rounded border border-info bg-light fw-bold text-primary">&#128241; M-Pesa (Vodacom)</div></div><div class="col-6"><div class="p-2 rounded border border-info bg-light fw-bold text-primary">&#128241; Mixx by Yas (Tigo)</div></div><div class="col-6"><div class="p-2 rounded border border-info bg-light fw-bold text-primary">&#128241; Airtel Money</div></div><div class="col-6"><div class="p-2 rounded border border-info bg-light fw-bold text-primary">&#127974; Benki (CRDB / NMB)</div></div></div><p class="small text-muted mb-0">Bofya hapa chini kutuma ombi la maelezo ya malipo au pendekezo la maboresho.</p></div><div class="modal-footer"><button type="button" class="btn btn-primary fw-bold w-100" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#mMaoni">Omba Maelezo ya Malipo / Tuma Maoni</button></div></div></div></div></div></body>
+</html>
